@@ -25,7 +25,15 @@ def send_email(subject: str, body: str, sender_email: str, sender_password: str,
     # Create the list of recipients to send the email to
     recipient_list = [email.strip() for email in recipient_emails.split(",") if email.strip()]
 
-    smtp_payload = f"Subject: {subject}\nTo: {recipient_emails}\n\n{body}" # Craft the smtp payload with the subject and body
+    # Crafts the smpt payload with high importance
+    smtp_payload = smtp_payload = (
+        f"Subject: {subject}\n"
+        f"To: {recipient_emails}\n"
+        f"X-Priority: 1 (Highest)\n"
+        f"X-MSMail-Priority: High\n"
+        f"Importance: High\n\n"
+        f"{body}"
+    )
 
     # Send the message with some basic error checking
     try:
@@ -57,7 +65,7 @@ def check_expiration_date(domain_name: str) -> datetime:
     - exp_date: the expiration date for the domain name
     '''
 
-    # Set up SSL context for later communication
+    # Set up SSL context for later communication, it doesn't have to be verified since we own all domains
     context = ssl.create_default_context()
 
     # Create TCP connection with basic error checking
@@ -66,7 +74,6 @@ def check_expiration_date(domain_name: str) -> datetime:
             # Starts the TLS handshake to get SSL information
             with context.wrap_socket(sock, server_hostname=domain_name) as ssock:
                 cert = ssock.getpeercert() # ask the server for it's SSL cert
-
                 exp_date_str = cert['notAfter']  # get the expiration date from the cert in a string format
                 # make it a datetime object for later usage
                 exp_date = datetime.strptime(exp_date_str, '%b %d %H:%M:%S %Y %Z').replace(tzinfo=timezone.utc) # explicitly define timezone
