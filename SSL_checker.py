@@ -7,11 +7,10 @@ a list of people, alerting them of it.
 
 from SSL_functions import send_email, check_expiration_date, days_until_expiration
 from datetime import datetime, timezone
-
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+#load_dotenv() # Uncomment this for testing
 
 # load in needed variables
 sender_email = os.getenv('SENDER_EMAIL')

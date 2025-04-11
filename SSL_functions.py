@@ -8,6 +8,8 @@ import smtplib
 import ssl
 import socket
 from datetime import datetime, timezone
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
 
 def send_email(subject: str, body: str, sender_email: str, sender_password: str, recipient_emails: str) -> None:
     '''
@@ -66,17 +68,16 @@ def check_expiration_date(domain_name: str) -> datetime:
     '''
 
     # Set up SSL context for later communication, it doesn't have to be verified since we own all domains
-    context = ssl.create_default_context()
+    context = ssl._create_unverified_context()
 
     # Create TCP connection with basic error checking
     try:
         with socket.create_connection((domain_name, 443), timeout=10) as sock:
             # Starts the TLS handshake to get SSL information
             with context.wrap_socket(sock, server_hostname=domain_name) as ssock:
-                cert = ssock.getpeercert() # ask the server for it's SSL cert
-                exp_date_str = cert['notAfter']  # get the expiration date from the cert in a string format
-                # make it a datetime object for later usage
-                exp_date = datetime.strptime(exp_date_str, '%b %d %H:%M:%S %Y %Z').replace(tzinfo=timezone.utc) # explicitly define timezone
+                der_cert = ssock.getpeercert(binary_form=True) # ask server for raw cert 
+                cert = x509.load_der_x509_certificate(der_cert, default_backend()) # decode the raw cert
+                exp_date = cert.not_valid_after_utc # pull out the expiration date 
 
                 return exp_date
             
