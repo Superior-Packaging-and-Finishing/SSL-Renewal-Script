@@ -31,8 +31,8 @@ for domain_name in domain_names_list:
     expiration_date = check_expiration_date(domain_name) # Get the expiration date
     days_until_exp = days_until_expiration(expiration_date, today) # Get days until expiration
 
-    # Print out the domain name and days until expiration for logging
-    print((domain_name, days_until_exp))
+    # Print out the domain name and days until expiration for testing
+    #print((domain_name, days_until_exp))
 
     # If the days until expiration is critical, add it to the list
     if  days_until_exp <= day_threshold:
@@ -41,7 +41,7 @@ for domain_name in domain_names_list:
 # Only send the email if there is one or more critical domains
 total_critical_domains = len(critical_domains)
 if total_critical_domains > 0:
-    print(f"The critical domains are {critical_domains}")
+    #print(f"The critical domains are {critical_domains}") # Print out critical domains for testing
     critical_domains.sort(key=lambda x: x[1]) # Sort the critical domains, so the most important ones are at the top
 
     # Change phrasing based on the number of critical domains
