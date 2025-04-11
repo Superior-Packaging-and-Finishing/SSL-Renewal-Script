@@ -8,7 +8,7 @@ a list of people, alerting them of it.
 from SSL_functions import send_email, check_expiration_date, days_until_expiration
 from datetime import datetime, timezone
 import os
-from dotenv import load_dotenv
+#from dotenv import load_dotenv # Uncomment this for testing
 
 #load_dotenv() # Uncomment this for testing
 
@@ -38,20 +38,26 @@ for domain_name in domain_names_list:
     if  days_until_exp <= day_threshold:
         critical_domains.append((domain_name, days_until_exp))
 
+# Only send the email if there is one or more critical domains
 total_critical_domains = len(critical_domains)
 if total_critical_domains > 0:
     print(f"The critical domains are {critical_domains}")
     critical_domains.sort(key=lambda x: x[1]) # Sort the critical domains, so the most important ones are at the top
 
+    # Change phrasing based on the number of critical domains
     if total_critical_domains == 1:
         body = "The following domain is expiring soon, please see below:\n\n"
     else:
         body = "The following domains are expiring soon, please see below:\n\n"
 
+    # Make a bulleted list of the critical domains
     for domain, days_left in critical_domains:
         body += f"- {domain}: {days_left} days left\n"
     
+    # Add date into the subject so it doesn't become one long email chain
     formatted_date = today.strftime("%m/%d/%y")
+
+    # Add call to action in the subject to bring attention to the email
     subject = f"ACTION NEEDED: Automated SSL expiration msg - {formatted_date}"
 
     send_email(subject, body, sender_email, sender_password, recipient_emails)
