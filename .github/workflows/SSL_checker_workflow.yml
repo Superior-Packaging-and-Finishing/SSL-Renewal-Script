@@ -1,0 +1,32 @@
+name: Daily SSL Expiration Check
+
+on:
+  schedule:
+    - cron: "0 13 * * *"  # 9AM EST during daylight saving time (EDT is UTC-4, so 9AM = 13 UTC)
+  workflow_dispatch:
+
+jobs:
+  check_ssl_expiration:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run SSL expiration checker
+      env:
+        SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        RECIPIENT_EMAILS: ${{ secrets.RECIPIENT_EMAILS }}
+        DOMAIN_NAMES: ${{ secrets.DOMAIN_NAMES }}
+        DAY_THRESHOLD: ${{ secrets.DAY_THRESHOLD }}
+      run: python -u SSL_checker.py
